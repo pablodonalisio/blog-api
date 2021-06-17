@@ -3,7 +3,8 @@ class PostsController < ApplicationController
   before_action :set_post, only: %i[show update destroy]
 
   def index
-    @posts = Post.where('title LIKE ?', "%#{params[:title]}%")
+    @posts = Post.where(is_deleted: false)
+                 .where('title LIKE ?', "%#{params[:title]}%")
                  .joins(:category)
                  .where('categories.name LIKE ?', "%#{params[:category]}%")
                  .order(created_at: :desc)
@@ -34,7 +35,7 @@ class PostsController < ApplicationController
   end
 
   def destroy
-    @post.destroy
+    @post.update({ is_deleted: true })
   end
 
   private
