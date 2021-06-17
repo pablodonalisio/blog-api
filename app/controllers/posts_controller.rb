@@ -1,5 +1,6 @@
 class PostsController < ApplicationController
   before_action :authorize_request
+  before_action :set_post, only: %i[show update destroy]
 
   def index
     @posts = Post.where('title LIKE ?', "%#{params[:title]}%")
@@ -11,6 +12,10 @@ class PostsController < ApplicationController
     render json: @posts
   end
 
+  def show
+    render json: @post
+  end
+
   def create
     @post = @current_user.posts.build(post_params)
     if @post.save
@@ -20,9 +25,25 @@ class PostsController < ApplicationController
     end
   end
 
+  def update
+    if @post.update(post_params)
+      render json: @post
+    else
+      render json: @post.errors, status: :unprocessable_entity
+    end
+  end
+
+  def destroy
+    @post.destroy
+  end
+
   private
 
   def post_params
     params.require(:post).permit(:title, :content, :img_url, :category_id)
+  end
+
+  def set_post
+    @post = Post.find(params[:id])
   end
 end
