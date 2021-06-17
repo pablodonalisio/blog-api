@@ -2,11 +2,13 @@ class PostsController < ApplicationController
   before_action :authorize_request
 
   def index
-    @posts = Post.order(created_at: :desc).includes(:category)
-    render json: @posts.as_json(
-      only: %i[id title img_url created_at],
-      include: { category: { only: :name } }
-    )
+    @posts = Post.where('title LIKE ?', "%#{params[:title]}%")
+                 .joins(:category)
+                 .where('categories.name LIKE ?', "%#{params[:category]}%")
+                 .order(created_at: :desc)
+                 .select(:id, :title, :img_url, :created_at, 'categories.name AS category_name')
+
+    render json: @posts
   end
 
   def create
